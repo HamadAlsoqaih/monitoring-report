@@ -2,6 +2,7 @@
 
 Order review tracker for monitoring AI order-taking systems across multiple restaurants and branches.
 
+Link: https://hamadalsoqaih.github.io/monitoring-report/
 ## Features
 
 - **Restaurant → Branch → Notes hierarchy** with tab-based navigation
@@ -19,21 +20,3 @@ Order review tracker for monitoring AI order-taking systems across multiple rest
 - **PWA-ready**: add to iPhone home screen via Safari for app-like experience
 - **Dark theme**: designed for long review sessions
 - **Touch-optimized**: no tap delay, large hit targets, mobile-first layout
-
-## Deploy to GitHub Pages
-
-```bash
-npm install
-npm run deploy
-```
-
-Then in your repo: **Settings → Pages → Source → Deploy from branch → `gh-pages` / `/ (root)` → Save**.
-
-Site will be at `https://<username>.github.io/<repo-name>/`
-
-## Local dev
-
-```bash
-npm install
-npm run dev
-```

@@ -177,15 +177,11 @@ export default function QATracker() {
     <div className="min-h-screen bg-zinc-950 text-white pb-20" style={{ WebkitTapHighlightColor: "transparent" }}>
       {/* Header */}
       <div className="sticky top-0 z-40 bg-zinc-950 border-b border-zinc-800 px-3 pb-2.5" style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 0.625rem)" }}>
-        <div className="flex items-center justify-between mb-1.5">
-          <h1 className="text-base font-bold text-zinc-100">QA Tracker</h1>
-          <div className="flex gap-1.5">
-            <button onClick={() => setShowExport(true)} className="bg-zinc-800 active:bg-zinc-700 text-zinc-300 text-xs rounded-md px-2.5 py-1 touch-manipulation">Export</button>
-            <Trip labels={["Reset", "Sure?", "RESET ALL"]} onConfirm={resetAll} />
-          </div>
-        </div>
         <div className="flex items-center justify-between">
-          <div className="text-[10px] text-zinc-500 uppercase tracking-widest">Total Orders</div>
+          <div>
+            <h1 className="text-base font-bold text-zinc-100">QA Tracker</h1>
+            <div className="text-[10px] text-zinc-500 uppercase tracking-widest">Total Orders</div>
+          </div>
           <span className="text-2xl font-semibold text-white tabular-nums">{totalCount(state)}</span>
         </div>
       </div>
@@ -297,6 +293,12 @@ export default function QATracker() {
         {!activeRestaurant && state.restaurants.length === 0 && (
           <div className="pt-12 text-center text-zinc-600 text-sm">Add a restaurant to get started</div>
         )}
+      </div>
+
+      {/* Bottom bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-zinc-900 border-t border-zinc-800 px-3 py-2.5 flex gap-2" style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 0.625rem)" }}>
+        <button onClick={() => setShowExport(true)} className="flex-1 bg-amber-500 active:bg-amber-600 text-zinc-900 font-semibold text-sm rounded-xl py-2.5 touch-manipulation">Export</button>
+        <Trip labels={["Reset", "Sure?", "RESET ALL"]} onConfirm={resetAll} />
       </div>
 
       {/* Export modal */}

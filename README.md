@@ -11,7 +11,7 @@ npm run deploy
 
 This builds and pushes to a `gh-pages` branch. Then in your repo go to **Settings → Pages → Source** → select **Deploy from a branch** → pick `gh-pages` / `/ (root)` → Save.
 
-Your site will be at `https://HamadAlsoqaih.github.io/monitoring-report/`
+Your site will be at `https://<username>.github.io/<repo-name>/`
 
 ## Local dev
 

@@ -1,7 +1,7 @@
 # QA Tracker
 
 Order review tracker for monitoring AI order-taking systems across multiple restaurants and branches.
-
+Link: https://hamadalsoqaih.github.io/monitoring-report/
 ## Features
 
 - **Restaurant → Branch → Notes hierarchy** with tab-based navigation

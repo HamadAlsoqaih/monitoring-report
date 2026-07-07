@@ -2,6 +2,8 @@
 
 Order review tracker for monitoring AI order-taking systems across multiple restaurants and branches.
 
+Link: https://hamadalsoqaih.github.io/monitoring-report/
+
 ## Features
 
 - **Restaurant → Branch → Notes hierarchy** with tab-based navigation
@@ -28,8 +30,6 @@ npm run deploy
 ```
 
 Then in your repo: **Settings → Pages → Source → Deploy from branch → `gh-pages` / `/ (root)` → Save**.
-
-Site will be at `https://<username>.github.io/<repo-name>/`
 
 ## Local dev
 

@@ -48,9 +48,13 @@ const getSev = (note) => {
 
 const DEFAULT_NOTES = [
   { text: "Customer normal order", severity: "none", isDefault: true },
-  { text: "Customer manual order", severity: "none", isDefault: true },
   { text: "Casher normal order", severity: "normal", isDefault: true },
-  { text: "Casher manual order", severity: "normal", isDefault: true },
+  { text: "Manual order", severity: "none", isDefault: true },
+];
+
+const ISSUE_CATEGORIES = [
+  { key: "operational", label: "Operational Issue" },
+  { key: "technical", label: "Technical Issue" },
 ];
 const makeDefaults = () => DEFAULT_NOTES.map(n => ({ ...n, id: gid(), count: 0, orders: [] }));
 
@@ -66,6 +70,7 @@ export default function QATracker() {
   const [restName, setRestName] = useState("");
   const [branchName, setBranchName] = useState("");
   const [noteName, setNoteName] = useState("");
+  const [noteCategory, setNoteCategory] = useState("operational");
   const [orderInputs, setOrderInputs] = useState({});
   const [timeState, setTimeState] = useState({});
   const [showExport, setShowExport] = useState(false);
@@ -115,7 +120,7 @@ export default function QATracker() {
   const addNote = () => {
     if (!branch) return;
     const t = noteName.trim(); if (!t) return;
-    updateBranch({ ...branch, notes: [...branch.notes, { id: gid(), text: t, count: 1, orders: [], severity: "none", isDefault: false }] });
+    updateBranch({ ...branch, notes: [...branch.notes, { id: gid(), text: t, count: 1, orders: [], severity: "none", isDefault: false, category: noteCategory }] });
     setNoteName("");
   };
   const updateNote = (note) => {
@@ -147,6 +152,15 @@ export default function QATracker() {
 
   // Export
   const fmtO = (orders) => orders.map(o => { const e = typeof o === "string" ? { num: o, time: null } : o; return `#${e.num}${e.time ? ` at ${e.time}` : ""}`; }).join(", ");
+  const sevBlocks = (list) => {
+    const crit = list.filter(n => getSev(n) === 2);
+    const normal = list.filter(n => getSev(n) === 1);
+    const ok = list.filter(n => getSev(n) === 0);
+    const out = [];
+    const push = (label, group) => group.forEach(n => { out.push(`        ${label} ${n.text} × ${n.count}`); if (n.orders.length) out.push(`          Orders: ${fmtO(n.orders)}`); });
+    push("🚨", crit); push("⚠️", normal); push("✅", ok);
+    return out;
+  };
   const report = () => {
     let l = [`QA Review Report`, `Total Orders: ${totalCount(state)}`, `---`];
     state.restaurants.forEach(r => {
@@ -156,12 +170,14 @@ export default function QATracker() {
         l.push(`\n  ## ${b.name} (${branchCount(b)} orders)`);
         const active = b.notes.filter(n => n.count > 0);
         if (!active.length) { l.push("    No notes."); return; }
-        const crit = active.filter(n => getSev(n) === 2);
-        const normal = active.filter(n => getSev(n) === 1);
-        const ok = active.filter(n => getSev(n) === 0);
-        if (crit.length) { l.push(`    🚨 CRITICAL:`); crit.forEach(n => { l.push(`      - ${n.text} × ${n.count}`); if (n.orders.length) l.push(`        Orders: ${fmtO(n.orders)}`); }); }
-        if (normal.length) { l.push(`    ⚠️ NORMAL ISSUES:`); normal.forEach(n => { l.push(`      - ${n.text} × ${n.count}`); if (n.orders.length) l.push(`        Orders: ${fmtO(n.orders)}`); }); }
-        if (ok.length) { l.push(`    ✅ NO ISSUES:`); ok.forEach(n => { l.push(`      - ${n.text} × ${n.count}`); if (n.orders.length) l.push(`        Orders: ${fmtO(n.orders)}`); }); }
+        const orders = active.filter(n => n.isDefault);
+        const operational = active.filter(n => !n.isDefault && n.category === "operational");
+        const technical = active.filter(n => !n.isDefault && n.category === "technical");
+        const other = active.filter(n => !n.isDefault && n.category !== "operational" && n.category !== "technical");
+        if (orders.length) { l.push(`    📦 ORDERS:`); l.push(...sevBlocks(orders)); }
+        if (operational.length) { l.push(`    🔧 OPERATIONAL ISSUES:`); l.push(...sevBlocks(operational)); }
+        if (technical.length) { l.push(`    💻 TECHNICAL ISSUES:`); l.push(...sevBlocks(technical)); }
+        if (other.length) { l.push(`    📝 OTHER NOTES:`); l.push(...sevBlocks(other)); }
       });
     });
     return l.join("\n");
@@ -251,6 +267,7 @@ export default function QATracker() {
                   <div className="flex items-center gap-1.5">
                     <button onClick={() => cycleSev(note)} className={`text-[10px] font-bold px-1.5 py-0.5 rounded touch-manipulation ${sev.bg} ${sev.text}`}>{sev.label}</button>
                     {note.isDefault && <span className="text-[9px] text-zinc-600 bg-zinc-800 rounded px-1">DEFAULT</span>}
+                    {note.category && <span className={`text-[9px] rounded px-1 ${note.category === "technical" ? "text-purple-300 bg-purple-950" : "text-sky-300 bg-sky-950"}`}>{note.category === "technical" ? "TECHNICAL" : "OPERATIONAL"}</span>}
                     <span className="flex-1 text-sm text-zinc-200 break-words">{note.text}</span>
                     <Ctr value={note.count} onChange={v => setNoteCount(note, v)} size="sm" />
                     {!note.isDefault && <button onClick={() => deleteNote(note.id)} className="text-zinc-600 active:text-red-400 text-xs px-1 touch-manipulation">✕</button>}
@@ -283,9 +300,19 @@ export default function QATracker() {
               );
             })}
 
-            <div className="flex gap-1.5">
-              <Grow value={noteName} onChange={e => setNoteName(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), addNote())} placeholder="New note..." className="flex-1 bg-zinc-900 text-zinc-200 text-sm rounded-xl px-3 py-2.5 outline-none border border-zinc-800 focus:border-amber-400 min-w-0" />
-              <button onClick={addNote} className="bg-amber-500 active:bg-amber-600 text-zinc-900 font-semibold rounded-xl px-4 py-2.5 text-sm touch-manipulation">+</button>
+            <div className="space-y-1.5">
+              <div className="flex gap-1.5">
+                {ISSUE_CATEGORIES.map(c => (
+                  <button key={c.key} onClick={() => setNoteCategory(c.key)}
+                    className={`flex-1 rounded-lg text-xs font-medium py-1.5 touch-manipulation transition-all ${noteCategory === c.key ? (c.key === "technical" ? "bg-purple-600 text-white" : "bg-sky-600 text-white") : "bg-zinc-800 text-zinc-400"}`}>
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-1.5">
+                <Grow value={noteName} onChange={e => setNoteName(e.target.value)} onKeyDown={e => e.key === "Enter" && !e.shiftKey && (e.preventDefault(), addNote())} placeholder="New note..." className="flex-1 bg-zinc-900 text-zinc-200 text-sm rounded-xl px-3 py-2.5 outline-none border border-zinc-800 focus:border-amber-400 min-w-0" />
+                <button onClick={addNote} className="bg-amber-500 active:bg-amber-600 text-zinc-900 font-semibold rounded-xl px-4 py-2.5 text-sm touch-manipulation">+</button>
+              </div>
             </div>
           </div>
         )}
